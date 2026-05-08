@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<RootNamespace>Cirreum.Runtime</RootNamespace>
+		<Description>The Cirreum Invocation Provider for the Cirreum Runtime Server — config-driven registration helper that bootstraps any InvocationProviderRegistrar from Cirreum:Invocation:Providers:{ProviderName}, plus the IInvocationBuilder seam, app-facing AddInvocation() / MapInvocationEndpoints() entry points, the typed Items-slot extensions, and the upgrade-time connection slot copy helper.</Description>
+		<PackageTags>cirreum;runtime;server;invocation;source;dispatch;providers</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Cirreum.Core" Version="5.1.0" />
+		<PackageReference Include="Cirreum.InvocationProvider" Version="1.0.1" />
+		<PackageReference Include="Cirreum.Logging.Deferred" Version="1.0.113" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Cirreum.Providers" />
+		<Using Include="Cirreum.Invocation" />
+		<Using Include="Cirreum.Invocation.Connections" />
+	</ItemGroup>
+
+</Project>
