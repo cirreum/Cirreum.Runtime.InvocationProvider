@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-05-07
+
 ### Added
 
 Initial release of the Cirreum Invocation Provider runtime library — the L4 piece that bootstraps L3 per-source `InvocationProviderRegistrar` impls and exposes the app-facing `IInvocationBuilder` seam plus `AddInvocation()` entry point. Mirrors the `Cirreum.Runtime.IdentityProvider` pattern. Anchored by [ADR-0002](https://github.com/cirreum/Cirreum.DevOps/blob/main/docs/adr/0002-unified-invocation-context.md).
