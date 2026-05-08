@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<RootNamespace>Cirreum.Runtime</RootNamespace>
-		<Description>The Cirreum Invocation Provider runtime helper — config-driven registration that bootstraps any InvocationProviderRegistrar from Cirreum:Invocation:Providers:{ProviderName}, plus the IInvocationBuilder seam, app-facing AddInvocation() entry point, the InvocationProviderMapping deferred-mapping record, and typed Items-slot extensions on IInvocationContext.</Description>
+		<Description>The Cirreum Invocation Provider runtime helper — config-driven registration that bootstraps any InvocationProviderRegistrar from Cirreum:Invocation:Providers:{ProviderName}, plus the IInvocationBuilder scope object, the InvocationProviderMapping deferred-mapping record, and typed Items-slot extensions on IInvocationContext. App-facing entry points (AddSignalRInvocation, AddInvocation, etc.) live in the L5 Runtime Extensions packages.</Description>
 		<PackageTags>cirreum;runtime;server;invocation;source;dispatch;providers</PackageTags>
 	</PropertyGroup>
 
@@ -12,7 +12,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Cirreum.Core" Version="5.1.0" />
-		<PackageReference Include="Cirreum.InvocationProvider" Version="1.0.1" />
+		<PackageReference Include="Cirreum.InvocationProvider" Version="1.1.0" />
 		<PackageReference Include="Cirreum.Logging.Deferred" Version="1.0.113" />
 	</ItemGroup>
 

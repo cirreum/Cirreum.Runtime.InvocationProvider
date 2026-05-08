@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **`IInvocationBuilder` slimmed down to just `HostBuilder`.** The redundant `Services`, `Configuration`, `RegisteredInstances`, and `TrackInstance` members were dropped — all reachable via `HostBuilder.Services` / `HostBuilder.Configuration` or duplicated work the L2 registrar's static `ProcessedInstances` tracker already does authoritatively. Now mirrors `IIdentityBuilder`'s minimalism — the builder's only job is to scope per-source extension methods to a clear site in `Program.cs`.
+- **App-facing entry point relocated from L4 to L5.** `AddInvocation(this IHostApplicationBuilder, Action<IInvocationBuilder>)` is no longer in this package — its responsibility moves to the L5 Runtime Extensions layer where it structurally belongs. Per-source packages (`Cirreum.Runtime.Invocation.SignalR`, `Cirreum.Runtime.Invocation.WebSockets`, future `*.Grpc`) each surface their own `Add{Source}Invocation()` entry point on `IHostApplicationBuilder`, and the umbrella `Cirreum.Runtime.Invocation` package surfaces a unified `AddInvocation()` that registers every shipped source. This is the exact mirror of the Identity track's `AddOidcIdentity` / `AddEntraExternalIdIdentity` / umbrella `AddIdentity` shape.
+
+### Updated
+
+- **`Cirreum.InvocationProvider`** floor `1.0.1` → `1.1.0`. Picks up the `DisconnectInfo` parameter on `IConnectionLifecycle.OnDisconnectedAsync` and aligns the L4 floor with the L5 SignalR adapter (which floors at L2 1.1.0).
+
+### Migration from 1.0.0
+
+For framework-internal consumers and L5 invocation-source extension authors:
+
+- `IInvocationBuilder.HostBuilder` is unchanged — the only retained member.
+- `IInvocationBuilder.Services` → `builder.HostBuilder.Services`
+- `IInvocationBuilder.Configuration` → `builder.HostBuilder.Configuration`
+- `IInvocationBuilder.RegisteredInstances` / `TrackInstance` → no replacement needed; the L2 `InvocationProviderRegistrar` base already prevents duplicate instance keys via its static `ProcessedInstances` tracker.
+- `builder.AddInvocation(b => ...)` no longer exists in this package. Apps install an L5 Runtime Extensions package (e.g. `Cirreum.Runtime.Invocation.SignalR`) and call its per-source entry point (e.g. `builder.AddSignalRInvocation(b => b.AddSignalR<THub>("key"))`), or the umbrella's `AddInvocation()` for the kitchen-sink case.
+
+No published consumers of v1.0.0 are known to exist — the L5 Runtime Extensions packages that would consume this haven't shipped yet, and `Cirreum.Runtime.Server` does not reference this package (no intra-layer L4 reference). Same window-of-no-consumers reasoning that motivated the L2 corrections in 1.0.1 / 1.1.0.
+
 ## [1.0.0] - 2026-05-07
 
 ### Added

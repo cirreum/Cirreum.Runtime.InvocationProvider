@@ -10,9 +10,11 @@
 
 ## Overview
 
-`Cirreum.Runtime.InvocationProvider` is the Runtime-layer library that bootstraps any `InvocationProviderRegistrar<TSettings, TInstanceSettings>` from configuration. Single responsibility: given a registrar type, bind the corresponding config section and call both phases of the registrar's lifecycle correctly. It also exposes the app-facing `IInvocationBuilder` seam and the top-level `AddInvocation()` entry point. The endpoints-phase mapping (`MapInvocation()` / per-source `Map*Invocation()`) lives in the Runtime Extensions layer (L5).
+`Cirreum.Runtime.InvocationProvider` is the Runtime-layer library that bootstraps any `InvocationProviderRegistrar<TSettings, TInstanceSettings>` from configuration. Single responsibility: given a registrar type, bind the corresponding config section and call both phases of the registrar's lifecycle correctly. It also exposes the `IInvocationBuilder` scope object that L5 invocation-source extensions attach their per-instance methods to (`AddSignalR<THub>`, `AddWebSocket<THandler>`, …).
 
-Apps do **not** reference this package directly — they install a Runtime Extensions package such as `Cirreum.Runtime.Invocation.SignalR` or `Cirreum.Runtime.Invocation.WebSockets`, which use this helper internally. Apps that only use HTTP invocations never reference it at all — HTTP is composed automatically by `Cirreum.Services.Server`.
+App-facing entry points (`AddSignalRInvocation`, `AddWebSocketInvocation`, umbrella `AddInvocation`) and the endpoints-phase mapping (`MapSignalRInvocation`, `MapInvocation`) live in the L5 Runtime Extensions packages — exact mirror of the Identity track's `AddOidcIdentity` / `AddIdentity` shape.
+
+Apps do **not** reference this package directly — they install a Runtime Extensions package such as `Cirreum.Runtime.Invocation.SignalR` or the umbrella `Cirreum.Runtime.Invocation`, which pull this helper in transitively. Apps that only use HTTP invocations never reference it at all — HTTP is composed automatically by `Cirreum.Services.Server`.
 
 `Cirreum.Runtime.Server` does **not** reference this package either (no intra-layer L4 references). Apps that use long-lived invocation sources get this package transitively through whichever L5 source package they install.
 
@@ -23,7 +25,7 @@ Invocation provider registrars run in two phases:
 1. **Services phase** (before `builder.Build()`) — `Register(settings, services, configuration)` wires up DI.
 2. **Endpoints phase** (after `builder.Build()`) — `Map(settings, endpoints)` maps HTTP routes (`MapHub<THub>`, raw WebSocket endpoints, etc.).
 
-`IEndpointRouteBuilder` isn't available at builder time, so this helper runs phase 1 immediately and **stashes a closure** for phase 2 as a DI singleton (an `InvocationProviderMapping`). The Runtime Extensions layer pulls the stashed closures at `MapInvocation()` / `Map*Invocation()` call time and invokes them against the live `IEndpointRouteBuilder`.
+`IEndpointRouteBuilder` isn't available at builder time, so this helper runs phase 1 immediately and **stashes a closure** for phase 2 as a DI singleton (an `InvocationProviderMapping`). The L5 Runtime Extensions layer pulls the stashed closures at `MapInvocation()` / `Map*Invocation()` call time and invokes them against the live `IEndpointRouteBuilder`.
 
 ## API
 
@@ -34,11 +36,11 @@ using Microsoft.Extensions.Hosting;
 
 builder.RegisterInvocationProvider<
     SignalRInvocationRegistrar,
-    SignalRInvocationProviderSettings,
-    SignalRInvocationProviderInstanceSettings>();
+    SignalRInvocationSettings,
+    SignalRInvocationInstanceSettings>();
 ```
 
-Generally called from inside per-source Runtime Extension packages (`AddSignalR<THub>()`, `AddWebSocket<THandler>()`), not from app code.
+Called from inside L5 invocation-source entry points (`AddSignalRInvocation`, `AddWebSocketInvocation`, …), not from app code.
 
 **What it does:**
 
@@ -50,18 +52,21 @@ Generally called from inside per-source Runtime Extension packages (`AddSignalR<
 
 ### `IInvocationBuilder` / `InvocationBuilder`
 
-The fluent configuration builder passed into the `AddInvocation(configure)` callback. Per-source Runtime Extensions (`AddSignalR<THub>()`, `AddWebSocket<THandler>()`) are extension methods *on* `IInvocationBuilder` — apps compose them with the typed-handle pattern:
+A minimal scope object holding a single `HostBuilder` property. Created by L5 invocation-source entry points and passed to the caller's configuration callback so per-instance extension methods (`AddSignalR<THub>`, `AddWebSocket<THandler>`, …) — defined on `IInvocationBuilder` by their respective L5 packages — can be chained naturally:
 
 ```csharp
+// Per-source entry point (lives in Cirreum.Runtime.Invocation.SignalR):
+builder.AddSignalRInvocation(b => b
+    .AddSignalR<ChatHub>("chat")
+    .AddSignalR<NotificationHub>("notifications"));
+
+// Umbrella entry point (lives in Cirreum.Runtime.Invocation):
 builder.AddInvocation(b => b
     .AddSignalR<ChatHub>("chat")
-    .AddSignalR<NotificationHub>("notifications")
     .AddWebSocket<VoiceFrameHandler>("voice"));
 ```
 
-Each per-source extension calls `builder.HostBuilder.RegisterInvocationProvider<...>()` internally so the registrar's two-phase lifecycle runs correctly. `HostBuilder` is exposed on the builder for advanced scenarios that need the underlying `IHostApplicationBuilder`.
-
-Defined here (not duplicated per Runtime Extensions package) so the callback-based API composes identically regardless of which source packages the app installs.
+`IInvocationBuilder` is intentionally minimal — mirrors `IIdentityBuilder`'s shape. Per-instance source-specific knowledge lives in the L5 packages; L4 just provides the scope object and the registration helper.
 
 ### `InvocationProviderMapping` (stashed in DI)
 
@@ -115,9 +120,10 @@ The package binds settings from `Cirreum:Invocation:Providers:{ProviderName}`:
 
 ## Dependencies
 
-- **Cirreum.InvocationProvider** — L2 abstractions (`IInvocationContext`, `IInvocationConnection`, `InvocationProviderRegistrar`)
+- **Cirreum.Core** `5.1.0+` — cross-host foundation
+- **Cirreum.InvocationProvider** `1.1.0+` — L2 abstractions (`IInvocationContext`, `IInvocationConnection`, `IConnectionLifecycle`, `DisconnectInfo`, `InvocationProviderRegistrar`)
 - **Cirreum.Logging.Deferred** — deferred logging for startup diagnostics
-- **Microsoft.AspNetCore.App** — `IEndpointRouteBuilder`
+- **Microsoft.AspNetCore.App** (framework reference) — `IEndpointRouteBuilder`
 
 ## Versioning
 

@@ -13,36 +13,6 @@ using Microsoft.Extensions.DependencyInjection;
 public static class HostApplicationBuilderExtensions {
 
 	/// <summary>
-	/// Configure the Invocation family for this host. Apps call this once at startup;
-	/// invocation-source packages surface their <c>Add{Source}&lt;T&gt;(key)</c>
-	/// extension methods on <see cref="IInvocationBuilder"/>.
-	/// </summary>
-	/// <param name="builder">The host application builder.</param>
-	/// <param name="configure">
-	/// Callback that registers per-instance invocation sources via provided extension
-	/// methods on the supplied <see cref="IInvocationBuilder"/>.
-	/// </param>
-	/// <returns>The host application builder for chaining.</returns>
-	/// <remarks>
-	/// HTTP is composed automatically at <c>Build()</c> time by <c>Cirreum.Services.Server</c>;
-	/// it is not registered through this builder. <c>AddInvocation</c> is required only when
-	/// the app needs additional invocation sources (SignalR, WebSocket, gRPC, queue, …)
-	/// beyond HTTP.
-	/// </remarks>
-	public static IHostApplicationBuilder AddInvocation(
-		this IHostApplicationBuilder builder,
-		Action<IInvocationBuilder> configure) {
-
-		ArgumentNullException.ThrowIfNull(builder);
-		ArgumentNullException.ThrowIfNull(configure);
-
-		var invocationBuilder = new InvocationBuilder(builder);
-		configure(invocationBuilder);
-
-		return builder;
-	}
-
-	/// <summary>
 	/// Register an Invocation provider's registrar: instantiates <typeparamref name="TRegistrar"/>,
 	/// binds its settings from <c>Cirreum:Invocation:Providers:{ProviderName}</c>, runs the
 	/// registrar's services-phase registration, and stashes an <see cref="InvocationProviderMapping"/>
