@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<RootNamespace>Cirreum.Runtime</RootNamespace>
-		<Description>The Cirreum Invocation Provider for the Cirreum Runtime Server — config-driven registration helper that bootstraps any InvocationProviderRegistrar from Cirreum:Invocation:Providers:{ProviderName}, plus the IInvocationBuilder seam, app-facing AddInvocation() / MapInvocationEndpoints() entry points, the typed Items-slot extensions, and the upgrade-time connection slot copy helper.</Description>
+		<Description>The Cirreum Invocation Provider runtime helper — config-driven registration that bootstraps any InvocationProviderRegistrar from Cirreum:Invocation:Providers:{ProviderName}, plus the IInvocationBuilder seam, app-facing AddInvocation() entry point, the InvocationProviderMapping deferred-mapping record, and typed Items-slot extensions on IInvocationContext.</Description>
 		<PackageTags>cirreum;runtime;server;invocation;source;dispatch;providers</PackageTags>
 	</PropertyGroup>
 
