@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Removed `InvocationContextAuthenticationExtensions`** (`Cirreum.Security` namespace) — the typed `GetAuthenticatedScheme` / `SetAuthenticatedScheme` / `GetApplicationUserCache` / `SetApplicationUserCache` extensions on `IInvocationContext`. These were originally added on the speculative premise of "consumers might want type-safe access to the auth `Items`-slot keys," but on review the framework's actual posture is that **app code should not be reading or writing these slots at all** — they're framework-internal cache state. App code reads through the canonical APIs (`IUserStateAccessor.GetUser()` → `IUserState`); framework writers (`AudienceProviderRoleClaimsTransformer`, the dynamic-scheme forward selector, `UserStateAccessor.ResolveApplicationUserAsync`) use raw dictionary access against `AuthenticationContextKeys.*` consts as their established pattern. Exposing typed setters created an attractive nuisance: app developers who shouldn't be touching these slots would discover the typed setters and assume that's a sanctioned path. Removing the surface eliminates the nuisance and clarifies the contract — there's no public way for app code to fiddle with the auth cache.
+
+  Captured as `### Changed` (not `### Removed`) under the same window-of-no-consumers, framework-owned-implementer-set precedent as the L2 1.1.0 / 1.2.0 / 1.3.0 cascades — these extensions are a v1.x pre-adoption surface; no app or framework code calls them today (verified via codebase grep). The deletion is a Minor under the established precedent rather than a Major.
+
 ## [1.1.2] - 2026-05-09
 
 ### Updated

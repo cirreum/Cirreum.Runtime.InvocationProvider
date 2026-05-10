@@ -83,15 +83,6 @@ Public record — Runtime Extensions packages resolve `IEnumerable<InvocationPro
 
 This package deliberately does not provide a one-size-fits-all endpoints-phase entry point itself; the choice between umbrella-level and per-source mapping belongs to the L5 layer, where each per-source package can compose with the matching ASP.NET primitives (`MapHub<THub>()`, etc.) under a coherent name.
 
-### Typed `Items`-slot helpers (`Cirreum.Security.InvocationContextAuthenticationExtensions`)
-
-Typed extension methods on `IInvocationContext` for the well-known `AuthenticationContextKeys` slots:
-
-- `GetAuthenticatedScheme()` / `SetAuthenticatedScheme(string)`
-- `GetApplicationUserCache()` / `SetApplicationUserCache(IApplicationUser)`
-
-Provides type-safety over the raw `Items[...]` dictionary access used by upstream writers (the role-claims transformer) and downstream readers (`UserStateAccessor`, the conductor pipeline).
-
 ## Configuration
 
 The package binds settings from `Cirreum:Invocation:Providers:{ProviderName}`:
